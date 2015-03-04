@@ -13,6 +13,7 @@
     <script src="js/batterycapacity.js"></script>
     <script src="js/leftsignal.js"></script>
     <script src="js/front_leftsignal.js"></script>
+    <script src="js/ipwebcam.js"></script>
 
     <!---
     <script src="charge107.js"></script>
@@ -23,6 +24,9 @@
     <style>
     body {
         background-color:lightred;
+    }
+    #img2{
+        background-color: blue;
     }
     </style>
 
@@ -35,6 +39,7 @@
         [698, tempo * .25],
         [880, tempo * .25],
         [null, 50]
+                
     ];
 
     function sensop(mag) {
@@ -52,8 +57,8 @@
             //console.log("togglesensors");
             $("#allsensors").toggleClass('hidden');
         });
-        //var socket = io.connect('http://10.48.102.xxx:3001'); //change this to match your robot
-        var socket = io.connect('http://10.48.102.109:3001'); //change this to match your robot
+        //var socket = io.connect('http://10.48.102.109:3001'); //change this to match your robot
+        var socket = io.connect('http://10.48.102.108:3001'); //change this to match your robot
         batterycapacity(socket);
         leftsignal(socket);
         front_leftsignal(socket);
@@ -154,12 +159,25 @@
             console.log(event.which);
             speed = $("#speed").text();
             //speed = 100;
-            if (event.which === 87 || event.which === 38) //w, up arrow - move forward
+            if (event.which === 38) // up arrow - move forward
             {
                 //socket.emit('sing', [[300,300]]);
                 event.preventDefault();
                 speed = $("#speed").text();
-                speed = speed * 1 + 25;
+                speed = 250;
+                $("#speed").text(speed);
+                socket.emit('drive', {
+                    left: speed,
+                    right: speed
+                });
+
+            }
+                        if (event.which === 87) //w - move forward fast
+            {
+                //socket.emit('sing', [[300,300]]);
+                event.preventDefault();
+                speed = $("#speed").text();
+                speed = 500;
                 $("#speed").text(speed);
                 socket.emit('drive', {
                     left: speed,
@@ -168,11 +186,11 @@
 
             }
 
-            if (event.which === 83 || event.which === 40) //s, down arrow - move backward
+            if (event.which === 40) //down arrow - move backward
             {
                 event.preventDefault();
                 speed = $("#speed").text();
-                speed = speed * 1 - 25;
+                speed = -250;
                 $("#speed").text(speed);
                 socket.emit('drive', {
                     left: speed,
@@ -180,13 +198,24 @@
                 });
             }
 
+            if (event.which === 83) //s- move backward fast
+            {
+                event.preventDefault();
+                speed = $("#speed").text();
+                speed = -500;
+                $("#speed").text(speed);
+                socket.emit('drive', {
+                    left: speed,
+                    right: speed
+                });
+            }
 
 
             if (event.which === 37) //left arrow - move right
             {
                 event.preventDefault();
                 speed = $("#speed").text();
-                speed = 25;
+                speed = 250;
                 $("#speed").text(speed);
                 socket.emit('drive', {
                     left: speed,
@@ -199,11 +228,11 @@
             {
                 event.preventDefault();
                 speed = $("#speed").text();
-                (speed < 25) ? speed=25 : speed = speed;
+                (speed < 250) ? speed=250 : speed = speed;
                 $("#speed").text(speed);
                 socket.emit('drive', {
                     left: Math.round(speed),
-                    right: Math.round(speed -25)
+                    right: Math.round(speed -250)
                 });
 
             }
@@ -212,10 +241,10 @@
             {
                 event.preventDefault();
                 speed = $("#speed").text();
-                (speed < 25) ? speed=25 : speed = speed;
+                (speed < 250) ? speed=250 : speed = speed;
                 $("#speed").text(speed);
                 socket.emit('drive', {
-                    left: Math.round(speed - 25),
+                    left: Math.round(speed - 250),
                     right: Math.round(speed)
                 });
 
@@ -225,12 +254,37 @@
             {
                 event.preventDefault();
                 speed = $("#speed").text();
-                speed = 25;
+                speed = 250;
                 $("#speed").text(speed);
                 socket.emit('drive', {
                     left: -speed,
                     right: speed
                 });
+            }
+                        if (event.which === 65) //a - forward left
+            {
+                event.preventDefault();
+                speed = $("#speed").text();
+                (speed < 250) ? speed=250 : speed = speed;
+                $("#speed").text(speed);
+                socket.emit('drive', {
+                    left: Math.round(speed),
+                    right: Math.round(speed -250)
+                });
+
+            }
+
+            if (event.which === 68) //d - forward left
+            {
+                event.preventDefault();
+                speed = $("#speed").text();
+                (speed < 250) ? speed=250 : speed = speed;
+                $("#speed").text(speed);
+                socket.emit('drive', {
+                    left: Math.round(speed - 250),
+                    right: Math.round(speed)
+                });
+
             }
 
             if (event.which === 32) //space - stop
@@ -369,6 +423,19 @@
                 </button>
             </div>
         </div>
+       
+        <div id="video_pane" style="margin: auto; border: 1px solid black; display: table;">
+          
+        <img id="img1" class="video-image" alt="video" src="http://10.48.102.160:8080/video" style="visibility: visible;">
+        <img id="img2" class="video-image" style="display: block; z-index: -1; visibility: visible; margin-top: -240px;" alt="video" src="http://10.48.102.160:8080/video">
+        </div>
+                <div id="video_pane" style="margin: auto; border: 1px solid black; display: table;">
+          
+        <img id="img1" class="video-image" alt="video" src="http://10.48.102.169:8080/video" style="visibility: visible;">
+        <img id="img2" class="video-image" style="display: block; z-index: -1; visibility: visible; margin-top: -240px;" alt="video" src="http://10.48.102.169:8080/video">
+        </div>
+
+
         <div class="row">
             <div class="col-md-3" id="leftsignal" style="height:300px">.....</div>
             <div class="col-md-3" id="front_leftsignal" style="height:300px">.....</div>
@@ -376,6 +443,8 @@
             <div class="col-md-3" id="rightdata" style="height:300px">.....</div>
         </div>
         <div class="col-md-3" id="batterycapacity" style="height:300px">bat</div>
+
+
 
         <div class="row">
             <div class="col-xs-6">
